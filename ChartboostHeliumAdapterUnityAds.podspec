@@ -1,8 +1,8 @@
 Pod::Spec.new do |spec|
   spec.name        = 'ChartboostHeliumAdapterUnityAds'
-  spec.version     = '4.4.2.0.0'
+  spec.version     = '4.4.4.1.0'
   spec.license     = { :type => 'MIT', :file => 'LICENSE.md' }
-  spec.homepage    = 'https://github.com/ChartBoost/helium-ios-adapter-chartboost'
+  spec.homepage    = 'https://github.com/ChartBoost/helium-ios-adapter-unityads'
   spec.authors     = { 'Chartboost' => 'https://www.chartboost.com/' }
   spec.summary     = 'Helium iOS SDK Unity Ads adapter.'
   spec.description = 'Unity Ads Adapters for mediating through Helium. Supported ad formats: Banner, Interstitial, and Rewarded.'
@@ -23,5 +23,8 @@ Pod::Spec.new do |spec|
   spec.dependency 'ChartboostHelium', '~> 4.0'
 
   # Partner network SDK and version that this adapter is certified to work with.
-  spec.dependency 'UnityAds', '4.2' 
+  spec.dependency 'UnityAds', '4.4.1'
+  
+  # The partner network SDK is a static framework which requires the static_framework option.
+  spec.static_framework = true
 end
