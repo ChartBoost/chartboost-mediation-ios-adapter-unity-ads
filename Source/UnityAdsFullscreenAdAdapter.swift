@@ -120,16 +120,16 @@ extension UnityAdsFullscreenAdAdapter: UnityAdsShowDelegate {
         if request.format == .rewarded && state == .showCompletionStateCompleted {
             let reward = Reward(amount: nil, label: nil)
             log(.didReward(partnerAd, reward: reward))
-            partnerAdDelegate?.didReward(partnerAd, reward: reward)
+            partnerAdDelegate?.didReward(partnerAd, reward: reward) ?? log(.delegateUnavailable)
         }
         // Report dismiss
         log(.didDismiss(partnerAd, error: nil))
-        partnerAdDelegate?.didDismiss(partnerAd, error: nil)
+        partnerAdDelegate?.didDismiss(partnerAd, error: nil) ?? log(.delegateUnavailable)
     }
     
     func unityAdsShowClick(_ placementId: String) {
         // Report click
         log(.didClick(partnerAd, error: nil))
-        partnerAdDelegate?.didClick(partnerAd)
+        partnerAdDelegate?.didClick(partnerAd) ?? log(.delegateUnavailable)
     }
 }
