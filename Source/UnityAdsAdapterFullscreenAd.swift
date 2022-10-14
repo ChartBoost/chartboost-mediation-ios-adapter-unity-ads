@@ -1,5 +1,5 @@
 //
-//  UnityAdsFullscreenAdAdapter.swift
+//  UnityAdsAdapterFullscreenAd.swift
 //  HeliumAdapterUnityAds
 //
 //  Created by Daniel Barros on 10/6/22.
@@ -9,47 +9,26 @@ import UIKit
 import HeliumSdk
 import UnityAds
 
-/// The Helium UnityAds ad adapter for interstitial and rewarded ads.
-final class UnityAdsFullscreenAdAdapter: NSObject, PartnerAdAdapter {
+/// The Helium UnityAds adapter fullscreen ad.
+final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
     
-    /// The associated partner adapter.
-    let adapter: PartnerAdapter
-    
-    /// The ad request containing data relevant to load operation.
-    private let request: PartnerAdLoadRequest
-    
-    /// The partner ad delegate to send ad life-cycle events to.
-    private weak var partnerAdDelegate: PartnerAdDelegate?
-        
-    /// A PartnerAd object to send in ad life-cycle events.
-    private lazy var partnerAd = PartnerAd(ad: nil, details: [:], request: request)
+    /// The partner ad view to display inline. E.g. a banner view.
+    /// Should be nil for full-screen ads.
+    var inlineView: UIView? { nil }
     
     /// A unique identifier passed in UnityAds load and show calls to identify the payload
     private let payloadIdentifier = UUID().uuidString
     
-    /// The completion for the ongoing load operation.
-    private var loadCompletion: ((Result<PartnerAd, Error>) -> Void)?
-
-    /// The completion for the ongoing show operation.
-    private var showCompletion: ((Result<PartnerAd, Error>) -> Void)?
-    
-    init(adapter: PartnerAdapter, request: PartnerAdLoadRequest, partnerAdDelegate: PartnerAdDelegate) throws {
-        guard !request.partnerPlacement.isEmpty else {
-            throw adapter.error(.loadFailure(request), description: "Empty placement")
-        }
-        self.adapter = adapter
-        self.request = request
-        self.partnerAdDelegate = partnerAdDelegate
-    }
-    
     /// Loads an ad.
-    /// - note: Do not call this method directly, `ModularPartnerAdapter` will take care of it when needed.
     /// - parameter viewController: The view controller on which the ad will be presented on. Needed on load for some banners.
     /// - parameter completion: Closure to be performed once the ad has been loaded.
-    func load(with viewController: UIViewController?, completion: @escaping (Result<HeliumSdk.PartnerAd, Error>) -> Void) {
+    func load(with viewController: UIViewController?, completion: @escaping (Result<PartnerEventDetails, Error>) -> Void) {
+        log(.loadStarted)
+        
         // Generate the UnityAds load options with the adm
         guard let options = UADSLoadOptions() else {
-            let error = error(.loadFailure(request), description: "Failed to create UnityAds UADSLoadOptions")
+            let error = error(.loadFailure, description: "Failed to create UnityAds UADSLoadOptions")
+            log(.loadFailed(error))
             completion(.failure(error))
             return
         }
@@ -63,13 +42,16 @@ final class UnityAdsFullscreenAdAdapter: NSObject, PartnerAdAdapter {
     }
     
     /// Shows a loaded ad.
-    /// - note: Do not call this method directly, `ModularPartnerAdapter` will take care of it when needed.
+    /// It will never get called for banner ads. You may leave the implementation blank for that ad format.
     /// - parameter viewController: The view controller on which the ad will be presented on.
     /// - parameter completion: Closure to be performed once the ad has been shown.
-    func show(with viewController: UIViewController, completion: @escaping (Result<HeliumSdk.PartnerAd, Error>) -> Void) {
+    func show(with viewController: UIViewController, completion: @escaping (Result<PartnerEventDetails, Error>) -> Void) {
+        log(.showStarted)
+        
         // Generate the UnityAds show options
         guard let options = UADSShowOptions() else {
-            let error = error(.showFailure(partnerAd), description: "Failed to create UnityAds UADSShowOptions")
+            let error = error(.showFailure, description: "Failed to create UnityAds UADSShowOptions")
+            log(.showFailed(error))
             completion(.failure(error))
             return
         }
@@ -84,33 +66,37 @@ final class UnityAdsFullscreenAdAdapter: NSObject, PartnerAdAdapter {
     }
 }
 
-extension UnityAdsFullscreenAdAdapter: UnityAdsLoadDelegate {
+extension UnityAdsAdapterFullscreenAd: UnityAdsLoadDelegate {
     
     func unityAdsAdLoaded(_ placementId: String) {
         // Report load success
-        loadCompletion?(.success(partnerAd)) ?? log(.loadResultIgnored)
+        log(.loadSucceeded)
+        loadCompletion?(.success([:])) ?? log(.loadResultIgnored)
         loadCompletion = nil
     }
     
     func unityAdsAdFailed(toLoad placementId: String, withError errorCode: UnityAdsLoadError, withMessage message: String) {
         // Report load failure
-        let error = error(.loadFailure(request), description: "\(errorCode) \(message)")
+        let error = error(.loadFailure, description: "\(errorCode) \(message)")
+        log(.loadFailed(error))
         loadCompletion?(.failure(error)) ?? log(.loadResultIgnored)
         loadCompletion = nil
     }
 }
 
-extension UnityAdsFullscreenAdAdapter: UnityAdsShowDelegate {
+extension UnityAdsAdapterFullscreenAd: UnityAdsShowDelegate {
     
     func unityAdsShowStart(_ placementId: String) {
         // Report show success
-        showCompletion?(.success(partnerAd)) ?? log(.showResultIgnored)
+        log(.showSucceeded)
+        showCompletion?(.success([:])) ?? log(.showResultIgnored)
         showCompletion = nil
     }
     
     func unityAdsShowFailed(_ placementId: String, withError errorCode: UnityAdsShowError, withMessage message: String) {
         // Report show failure
-        let error = error(.showFailure(partnerAd), description: "\(errorCode) \(message)")
+        let error = error(.showFailure, description: "\(errorCode) \(message)")
+        log(.showFailed(error))
         showCompletion?(.failure(error)) ?? log(.showResultIgnored)
         showCompletion = nil
     }
@@ -119,17 +105,17 @@ extension UnityAdsFullscreenAdAdapter: UnityAdsShowDelegate {
         // Report reward if show completed without skipping on a rewarded ad
         if request.format == .rewarded && state == .showCompletionStateCompleted {
             let reward = Reward(amount: nil, label: nil)
-            log(.didReward(partnerAd, reward: reward))
-            partnerAdDelegate?.didReward(partnerAd, reward: reward) ?? log(.delegateUnavailable)
+            log(.didReward(reward))
+            delegate?.didReward(self, details: [:], reward: reward) ?? log(.delegateUnavailable)
         }
         // Report dismiss
-        log(.didDismiss(partnerAd, error: nil))
-        partnerAdDelegate?.didDismiss(partnerAd, error: nil) ?? log(.delegateUnavailable)
+        log(.didDismiss(error: nil))
+        delegate?.didDismiss(self, details: [:], error: nil) ?? log(.delegateUnavailable)
     }
     
     func unityAdsShowClick(_ placementId: String) {
         // Report click
-        log(.didClick(partnerAd, error: nil))
-        partnerAdDelegate?.didClick(partnerAd) ?? log(.delegateUnavailable)
+        log(.didClick(error: nil))
+        delegate?.didClick(self, details: [:]) ?? log(.delegateUnavailable)
     }
 }

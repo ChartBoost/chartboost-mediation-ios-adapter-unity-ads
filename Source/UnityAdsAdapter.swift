@@ -10,7 +10,7 @@ import HeliumSdk
 import UnityAds
 
 /// The Helium UnityAds adapter.
-final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
+final class UnityAdsAdapter: NSObject, PartnerAdapter {
     
     /// The version of the partner SDK, e.g. "5.13.2"
     let partnerSDKVersion = UnityAds.getVersion()
@@ -24,12 +24,7 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
     
     /// The partner's name in a human-friendly version.
     let partnerDisplayName = "Unity Ads"
-    
-    /// Created ad adapter instances, keyed by the request identifier.
-    /// You should not generally need to modify this property in your adapter implementation, since it is managed by the
-    /// `ModularPartnerAdapter` itself on its default implementation for `PartnerAdapter` load, show and invalidate methods.
-    var adAdapters: [String: PartnerAdAdapter] = [:]
-    
+        
     /// The setUp completion received on setUp(), to be executed when UnityAds reports back its initialization status.
     private var setUpCompletion: ((Error?) -> Void)?
     
@@ -38,6 +33,12 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
     
     /// The last value set on `setGDPRConsentStatus(_:)`.
     private var gdprStatus: GDPRConsentStatus?
+    
+    /// The designated initializer for the adapter.
+    /// Helium SDK will use this constructor to create instances of conforming types.
+    /// - parameter storage: An object that exposes storage managed by the Helium SDK to the adapter.
+    /// It includes a list of created `PartnerAd` instances. You may ignore this parameter if you don't need it.
+    init(storage: PartnerAdapterStorage) {}
     
     /// Does any setup needed before beginning to load ads.
     /// - parameter configuration: Configuration data for the adapter to set up.
@@ -68,11 +69,9 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
     /// Fetches bidding tokens needed for the partner to participate in an auction.
     /// - parameter request: Information about the ad load request.
     /// - parameter completion: Closure to be performed with the fetched info.
-    func fetchBidderInformation(request: PreBidRequest, completion: @escaping ([String : String]) -> Void) {
+    func fetchBidderInformation(request: PreBidRequest, completion: @escaping ([String : String]?) -> Void) {
         // UnityAds does not currently provide any bidding token
-        log(.fetchBidderInfoStarted(request))
-        log(.fetchBidderInfoSucceeded(request))
-        completion([:])
+        completion(nil)
     }
     
     /// Indicates if GDPR applies or not.
@@ -126,13 +125,22 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
         log(.privacyUpdated(setting: "UADSMetaData", value: [key: value]))
     }
     
-    /// Provides a new ad adapter in charge of communicating with a single partner ad instance.
-    func makeAdAdapter(request: PartnerAdLoadRequest, partnerAdDelegate: PartnerAdDelegate) throws -> PartnerAdAdapter {
+    /// Creates a new ad object in charge of communicating with a single partner SDK ad instance.
+    /// Helium SDK calls this method to create a new ad for each new load request. Ad instances are never reused.
+    /// Helium SDK takes care of storing and disposing of ad instances so you don't need to.
+    /// `invalidate()` is called on ads before disposing of them in case partners need to perform any custom logic before the object gets destroyed.
+    /// If for some reason a new ad cannot be provided an error should be thrown.
+    /// - parameter request: Information about the ad load request.
+    /// - parameter delegate: The delegate that will receive ad life-cycle notifications.
+    func makeAd(request: PartnerAdLoadRequest, delegate: PartnerAdDelegate) throws -> PartnerAd {
+        guard !request.partnerPlacement.isEmpty else {
+            throw error(.invalidPlacement)
+        }
         switch request.format {
         case .interstitial, .rewarded:
-            return try UnityAdsFullscreenAdAdapter(adapter: self, request: request, partnerAdDelegate: partnerAdDelegate)
+            return try UnityAdsAdapterFullscreenAd(adapter: self, request: request, delegate: delegate)
         case .banner:
-            return try UnityAdsBannerAdAdapter(adapter: self, request: request, partnerAdDelegate: partnerAdDelegate)
+            return try UnityAdsAdapterBannerAd(adapter: self, request: request, delegate: delegate)
         }
     }
 }
