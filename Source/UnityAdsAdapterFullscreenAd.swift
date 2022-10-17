@@ -104,9 +104,8 @@ extension UnityAdsAdapterFullscreenAd: UnityAdsShowDelegate {
     func unityAdsShowComplete(_ placementId: String, withFinish state: UnityAdsShowCompletionState) {
         // Report reward if show completed without skipping on a rewarded ad
         if request.format == .rewarded && state == .showCompletionStateCompleted {
-            let reward = Reward(amount: nil, label: nil)
-            log(.didReward(reward))
-            delegate?.didReward(self, details: [:], reward: reward) ?? log(.delegateUnavailable)
+            log(.didReward)
+            delegate?.didReward(self, details: [:]) ?? log(.delegateUnavailable)
         }
         // Report dismiss
         log(.didDismiss(error: nil))
