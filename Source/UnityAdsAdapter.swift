@@ -10,26 +10,21 @@ import HeliumSdk
 import UnityAds
 
 /// The Helium UnityAds adapter.
-final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
+final class UnityAdsAdapter: NSObject, PartnerAdapter {
     
-    /// The version of the partner SDK, e.g. "5.13.2"
+    /// The version of the partner SDK.
     let partnerSDKVersion = UnityAds.getVersion()
     
-    /// The version of the adapter, e.g. "2.5.13.2.0"
-    /// The first number is Helium SDK's major version. The next 3 numbers are the partner SDK version. The last number is the build version of the adapter.
+    /// The version of the adapter.
+    /// The first digit is Helium SDK's major version. The last digit is the build version of the adapter. The intermediate digits correspond to the partner SDK version.
     let adapterVersion = "4.4.4.1.0"
     
-    /// The partner's identifier.
+    /// The partner's unique identifier.
     let partnerIdentifier = "unity"
     
-    /// The partner's name in a human-friendly version.
+    /// The human-friendly partner name.
     let partnerDisplayName = "Unity Ads"
-    
-    /// Created ad adapter instances, keyed by the request identifier.
-    /// You should not generally need to modify this property in your adapter implementation, since it is managed by the
-    /// `ModularPartnerAdapter` itself on its default implementation for `PartnerAdapter` load, show and invalidate methods.
-    var adAdapters: [String: PartnerAdAdapter] = [:]
-    
+        
     /// The setUp completion received on setUp(), to be executed when UnityAds reports back its initialization status.
     private var setUpCompletion: ((Error?) -> Void)?
     
@@ -38,6 +33,12 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
     
     /// The last value set on `setGDPRConsentStatus(_:)`.
     private var gdprStatus: GDPRConsentStatus?
+    
+    /// The designated initializer for the adapter.
+    /// Helium SDK will use this constructor to create instances of conforming types.
+    /// - parameter storage: An object that exposes storage managed by the Helium SDK to the adapter.
+    /// It includes a list of created `PartnerAd` instances. You may ignore this parameter if you don't need it.
+    init(storage: PartnerAdapterStorage) {}
     
     /// Does any setup needed before beginning to load ads.
     /// - parameter configuration: Configuration data for the adapter to set up.
@@ -68,11 +69,9 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
     /// Fetches bidding tokens needed for the partner to participate in an auction.
     /// - parameter request: Information about the ad load request.
     /// - parameter completion: Closure to be performed with the fetched info.
-    func fetchBidderInformation(request: PreBidRequest, completion: @escaping ([String : String]) -> Void) {
+    func fetchBidderInformation(request: PreBidRequest, completion: @escaping ([String : String]?) -> Void) {
         // UnityAds does not currently provide any bidding token
-        log(.fetchBidderInfoStarted(request))
-        log(.fetchBidderInfoSucceeded(request))
-        completion([:])
+        completion(nil)
     }
     
     /// Indicates if GDPR applies or not.
@@ -104,9 +103,9 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
         log(.privacyUpdated(setting: "UADSMetaData", value: [key: value]))
     }
     
-    /// Indicates the CCPA status both as a boolean and as a IAB US privacy string.
+    /// Indicates the CCPA status both as a boolean and as an IAB US privacy string.
     /// - parameter hasGivenConsent: A boolean indicating if the user has given consent.
-    /// - parameter privacyString: A IAB-compliant string indicating the CCPA status.
+    /// - parameter privacyString: An IAB-compliant string indicating the CCPA status.
     func setCCPAConsent(hasGivenConsent: Bool, privacyString: String?) {
         let key = String.privacyConsentKey
         let privacyMetaData = UADSMetaData()
@@ -126,13 +125,22 @@ final class UnityAdsAdapter: NSObject, ModularPartnerAdapter {
         log(.privacyUpdated(setting: "UADSMetaData", value: [key: value]))
     }
     
-    /// Provides a new ad adapter in charge of communicating with a single partner ad instance.
-    func makeAdAdapter(request: PartnerAdLoadRequest, partnerAdDelegate: PartnerAdDelegate) throws -> PartnerAdAdapter {
+    /// Creates a new ad object in charge of communicating with a single partner SDK ad instance.
+    /// Helium SDK calls this method to create a new ad for each new load request. Ad instances are never reused.
+    /// Helium SDK takes care of storing and disposing of ad instances so you don't need to.
+    /// `invalidate()` is called on ads before disposing of them in case partners need to perform any custom logic before the object gets destroyed.
+    /// If, for some reason, a new ad cannot be provided, an error should be thrown.
+    /// - parameter request: Information about the ad load request.
+    /// - parameter delegate: The delegate that will receive ad life-cycle notifications.
+    func makeAd(request: PartnerAdLoadRequest, delegate: PartnerAdDelegate) throws -> PartnerAd {
+        guard !request.partnerPlacement.isEmpty else {
+            throw error(.invalidPlacement)
+        }
         switch request.format {
         case .interstitial, .rewarded:
-            return try UnityAdsFullscreenAdAdapter(adapter: self, request: request, partnerAdDelegate: partnerAdDelegate)
+            return try UnityAdsAdapterFullscreenAd(adapter: self, request: request, delegate: delegate)
         case .banner:
-            return try UnityAdsBannerAdAdapter(adapter: self, request: request, partnerAdDelegate: partnerAdDelegate)
+            return try UnityAdsAdapterBannerAd(adapter: self, request: request, delegate: delegate)
         }
     }
 }
