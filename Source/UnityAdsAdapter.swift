@@ -28,12 +28,6 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// The setUp completion received on setUp(), to be executed when UnityAds reports back its initialization status.
     private var setUpCompletion: ((Error?) -> Void)?
     
-    /// The last value set on `setGDPRApplies(_:)`.
-    private var gdprApplies: Bool?
-    
-    /// The last value set on `setGDPRConsentStatus(_:)`.
-    private var gdprStatus: GDPRConsentStatus?
-    
     /// The designated initializer for the adapter.
     /// Helium SDK will use this constructor to create instances of conforming types.
     /// - parameter storage: An object that exposes storage managed by the Helium SDK to the adapter.
@@ -74,28 +68,15 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         completion(nil)
     }
     
-    /// Indicates if GDPR applies or not.
-    /// - parameter applies: `true` if GDPR applies, `false` otherwise.
-    func setGDPRApplies(_ applies: Bool) {
-        // Save value and set GDPR on UnityAds using both gdprApplies and gdprStatus
-        gdprApplies = applies
-        updateGDPRConsent()
-    }
-    
-    /// Indicates the user's GDPR consent status.
+    /// Indicates if GDPR applies or not and the user's GDPR consent status.
+    /// - parameter applies: `true` if GDPR applies, `false` if not, `nil` if the publisher has not provided this information.
     /// - parameter status: One of the `GDPRConsentStatus` values depending on the user's preference.
-    func setGDPRConsentStatus(_ status: GDPRConsentStatus) {
-        // Save value and set GDPR on UnityAds using both gdprApplies and gdprStatus
-        gdprStatus = status
-        updateGDPRConsent()
-    }
-    
-    private func updateGDPRConsent() {
+    func setGDPR(applies: Bool?, status: GDPRConsentStatus) {
         // Consent only applies if the user is subject to GDPR
-        guard gdprApplies == true, let gdprStatus = gdprStatus else {
+        guard applies == true else {
             return
         }
-        let value = gdprStatus == .granted ? true : false
+        let value = status == .granted
         let key = String.gdprConsentKey
         let gdprMetaData = UADSMetaData()
         gdprMetaData.set(key, value: value)
