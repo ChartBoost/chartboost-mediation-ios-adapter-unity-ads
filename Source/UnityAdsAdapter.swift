@@ -87,7 +87,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// Indicates the CCPA status both as a boolean and as an IAB US privacy string.
     /// - parameter hasGivenConsent: A boolean indicating if the user has given consent.
     /// - parameter privacyString: An IAB-compliant string indicating the CCPA status.
-    func setCCPAConsent(hasGivenConsent: Bool, privacyString: String?) {
+    func setCCPA(hasGivenConsent: Bool, privacyString: String) {
         let key = String.privacyConsentKey
         let privacyMetaData = UADSMetaData()
         privacyMetaData.set(key, value: hasGivenConsent)
@@ -96,9 +96,9 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     }
     
     /// Indicates if the user is subject to COPPA or not.
-    /// - parameter isSubject: `true` if the user is subject, `false` otherwise.
-    func setUserSubjectToCOPPA(_ isSubject: Bool) {
-        let value = !isSubject  // Subject to COPPA means the user is not over the age limit.
+    /// - parameter isChildDirected: `true` if the user is subject to COPPA, `false` otherwise.
+    func setCOPPA(isChildDirected: Bool) {
+        let value = !isChildDirected  // Child-directed means the user is not over the age limit.
         let key = String.userOverAgeLimitKey
         let ageGateMetaData = UADSMetaData()
         ageGateMetaData.set(key, value: value)
