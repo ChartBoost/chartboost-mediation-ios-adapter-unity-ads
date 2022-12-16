@@ -59,10 +59,7 @@ final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
         
         // Show
         showCompletion = completion
-        // UnityAds makes use of UI-related APIs directly from the thread show() is called, so we need to do it on the main thread
-        DispatchQueue.main.async { [self] in
-            UnityAds.show(viewController, placementId: request.partnerPlacement, options: options, showDelegate: self)
-        }
+        UnityAds.show(viewController, placementId: request.partnerPlacement, options: options, showDelegate: self)
     }
 }
 
