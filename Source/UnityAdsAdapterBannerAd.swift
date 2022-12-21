@@ -25,17 +25,13 @@ final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
         // Save completion for later
         loadCompletion = completion
         
-        // UnityAds banner inherits from UIView so we need to instantiate it on the main thread
-        DispatchQueue.main.async { [self] in
-            
-            // Create the banner
-            let banner = UADSBannerView(placementId: request.partnerPlacement, size: request.size ?? IABStandardAdSize)
-            banner.delegate = self
-            self.inlineView = banner
-            
-            // Load it
-            banner.load()
-        }
+        // Create the banner
+        let banner = UADSBannerView(placementId: request.partnerPlacement, size: request.size ?? IABStandardAdSize)
+        banner.delegate = self
+        inlineView = banner
+        
+        // Load it
+        banner.load()
     }
     
     /// Shows a loaded ad.
