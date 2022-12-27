@@ -27,7 +27,7 @@ final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
         
         // Generate the UnityAds load options with the adm
         guard let options = UADSLoadOptions() else {
-            let error = error(.loadFailure, description: "Failed to create UnityAds UADSLoadOptions")
+            let error = error(.loadFailureAborted, description: "Failed to create UnityAds UADSLoadOptions")
             log(.loadFailed(error))
             completion(.failure(error))
             return
@@ -50,7 +50,7 @@ final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
         
         // Generate the UnityAds show options
         guard let options = UADSShowOptions() else {
-            let error = error(.showFailure, description: "Failed to create UnityAds UADSShowOptions")
+            let error = error(.showFailureUnknown, description: "Failed to create UnityAds UADSShowOptions")
             log(.showFailed(error))
             completion(.failure(error))
             return
@@ -74,7 +74,7 @@ extension UnityAdsAdapterFullscreenAd: UnityAdsLoadDelegate {
     
     func unityAdsAdFailed(toLoad placementId: String, withError errorCode: UnityAdsLoadError, withMessage message: String) {
         // Report load failure
-        let error = error(.loadFailure, description: "\(errorCode) \(message)")
+        let error = error(.loadFailureException, description: "\(errorCode) \(message)")
         log(.loadFailed(error))
         loadCompletion?(.failure(error)) ?? log(.loadResultIgnored)
         loadCompletion = nil
@@ -92,7 +92,7 @@ extension UnityAdsAdapterFullscreenAd: UnityAdsShowDelegate {
     
     func unityAdsShowFailed(_ placementId: String, withError errorCode: UnityAdsShowError, withMessage message: String) {
         // Report show failure
-        let error = error(.showFailure, description: "\(errorCode) \(message)")
+        let error = error(.showFailureException, description: "\(errorCode) \(message)")
         log(.showFailed(error))
         showCompletion?(.failure(error)) ?? log(.showResultIgnored)
         showCompletion = nil
