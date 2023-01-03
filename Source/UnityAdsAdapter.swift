@@ -43,7 +43,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         
         // Get credentials, fail early if they are unavailable
         guard let gameID = configuration.gameID else {
-            let error = error(.missingSetUpParameter(key: .gameIDKey))
+            let error = error(.initializationFailureInvalidCredentials, description: "Missing \(String.gameIDKey)")
             log(.setUpFailed(error))
             completion(error)
             return
@@ -116,7 +116,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// - parameter delegate: The delegate that will receive ad life-cycle notifications.
     func makeAd(request: PartnerAdLoadRequest, delegate: PartnerAdDelegate) throws -> PartnerAd {
         guard !request.partnerPlacement.isEmpty else {
-            throw error(.invalidPlacement)
+            throw error(.loadFailureInvalidPartnerPlacement)
         }
         switch request.format {
         case .interstitial, .rewarded:
@@ -124,7 +124,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         case .banner:
             return try UnityAdsAdapterBannerAd(adapter: self, request: request, delegate: delegate)
         @unknown default:
-            throw error(.adFormatNotSupported(request))
+            throw error(.loadFailureUnsupportedAdFormat)
         }
     }
 }
@@ -140,7 +140,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
     
     func initializationFailed(_ errorCode: UnityAdsInitializationError, withMessage message: String) {
         // Report initialization failure
-        let error = error(.setUpFailure, description: "\(errorCode) \(message)")
+        let error = error(.initializationFailureUnknown, description: "\(errorCode) \(message)")
         log(.setUpFailed(error))
         setUpCompletion?(error) ?? log("Setup result ignored")
         setUpCompletion = nil
