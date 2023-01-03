@@ -74,7 +74,7 @@ extension UnityAdsAdapterFullscreenAd: UnityAdsLoadDelegate {
     
     func unityAdsAdFailed(toLoad placementId: String, withError errorCode: UnityAdsLoadError, withMessage message: String) {
         // Report load failure
-        let error = error(.loadFailureException, description: "\(errorCode) \(message)")
+        let error = error(.loadFailureUnknown, description: "\(errorCode) \(message)")
         log(.loadFailed(error))
         loadCompletion?(.failure(error)) ?? log(.loadResultIgnored)
         loadCompletion = nil
@@ -92,7 +92,7 @@ extension UnityAdsAdapterFullscreenAd: UnityAdsShowDelegate {
     
     func unityAdsShowFailed(_ placementId: String, withError errorCode: UnityAdsShowError, withMessage message: String) {
         // Report show failure
-        let error = error(.showFailureException, description: "\(errorCode) \(message)")
+        let error = error(.showFailureUnknown, description: "\(errorCode) \(message)")
         log(.showFailed(error))
         showCompletion?(.failure(error)) ?? log(.showResultIgnored)
         showCompletion = nil
