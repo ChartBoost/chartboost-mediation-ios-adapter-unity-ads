@@ -140,7 +140,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
     
     func initializationFailed(_ errorCode: UnityAdsInitializationError, withMessage message: String) {
         // Report initialization failure
-        let error = error(.initializationFailureUnknown, description: "\(errorCode) \(message)")
+        let error = partnerError(errorCode.rawValue, description: message)
         log(.setUpFailed(error))
         setUpCompletion?(error) ?? log("Setup result ignored")
         setUpCompletion = nil
