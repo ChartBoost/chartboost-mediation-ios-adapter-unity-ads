@@ -52,9 +52,9 @@ extension UnityAdsAdapterBannerAd: UADSBannerViewDelegate {
         loadCompletion = nil
     }
     
-    func bannerViewDidError(_ bannerView: UADSBannerView?, partnerError: UADSBannerError?) {
+    func bannerViewDidError(_ bannerView: UADSBannerView?, error: UADSBannerError?) {
         // Report load failure
-        let error = partnerError ?? error(.loadFailureUnknown)
+        let error = error ?? self.error(.loadFailureUnknown)
         log(.loadFailed(error))
         loadCompletion?(.failure(error)) ?? log(.loadResultIgnored)
         loadCompletion = nil
