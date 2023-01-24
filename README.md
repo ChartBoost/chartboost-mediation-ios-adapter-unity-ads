@@ -22,8 +22,8 @@ pod 'ChartboostMediationAdapterUnityAds'
 
 We are committed to a fully transparent development process and highly appreciate any contributions. Our team regularly monitors and investigates all submissions for the inclusion in our official adapter releases.
 
-Refer to our [CONTRIBUTING](https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unityads/blob/main/CONTRIBUTING.md) file for more information on how to contribute.
+Refer to our [CONTRIBUTING](https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unity-ads/blob/main/CONTRIBUTING.md) file for more information on how to contribute.
 
 ## License
 
-Refer to our [LICENSE](https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unityads/blob/main/LICENSE.md) file for more information.
+Refer to our [LICENSE](https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unity-ads/blob/main/LICENSE.md) file for more information.
