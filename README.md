@@ -1,6 +1,6 @@
 # Chartboost Mediation Unity Ads Adapter
 
-The Chartboost Mediation Unity Ads adapter mediates the Unity Ads SDK into the Chartboost Mediation SDK.
+The Chartboost Mediation Unity Ads adapter mediates Unity Ads via the Chartboost Mediation SDK.
 
 ## Minimum Requirements
 
