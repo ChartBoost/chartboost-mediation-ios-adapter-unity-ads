@@ -10,8 +10,8 @@
 //  Created by Daniel Barros on 10/6/22.
 //
 
+import ChartboostMediationSDK
 import UIKit
-import HeliumSdk
 import UnityAds
 
 /// The Helium Unity Ads adapter banner ad.
