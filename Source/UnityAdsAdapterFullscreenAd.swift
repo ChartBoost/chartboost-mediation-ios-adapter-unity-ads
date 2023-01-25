@@ -14,14 +14,14 @@ import UIKit
 import HeliumSdk
 import UnityAds
 
-/// The Helium UnityAds adapter fullscreen ad.
+/// The Helium Unity Ads adapter fullscreen ad.
 final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
     
     /// The partner ad view to display inline. E.g. a banner view.
     /// Should be nil for full-screen ads.
     var inlineView: UIView? { nil }
     
-    /// A unique identifier passed in UnityAds load and show calls to identify the payload
+    /// A unique identifier passed in Unity Ads load and show calls to identify the payload
     private let payloadIdentifier = UUID().uuidString
     
     /// Loads an ad.
@@ -30,9 +30,9 @@ final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
     func load(with viewController: UIViewController?, completion: @escaping (Result<PartnerEventDetails, Error>) -> Void) {
         log(.loadStarted)
         
-        // Generate the UnityAds load options with the adm
+        // Generate the Unity Ads load options with the adm
         guard let options = UADSLoadOptions() else {
-            let error = error(.loadFailureAborted, description: "Failed to create UnityAds UADSLoadOptions")
+            let error = error(.loadFailureAborted, description: "Failed to create Unity Ads UADSLoadOptions")
             log(.loadFailed(error))
             completion(.failure(error))
             return
@@ -53,9 +53,9 @@ final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
     func show(with viewController: UIViewController, completion: @escaping (Result<PartnerEventDetails, Error>) -> Void) {
         log(.showStarted)
         
-        // Generate the UnityAds show options
+        // Generate the Unity Ads show options
         guard let options = UADSShowOptions() else {
-            let error = error(.showFailureUnknown, description: "Failed to create UnityAds UADSShowOptions")
+            let error = error(.showFailureUnknown, description: "Failed to create Unity Ads UADSShowOptions")
             log(.showFailed(error))
             completion(.failure(error))
             return

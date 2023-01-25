@@ -14,7 +14,7 @@ import Foundation
 import HeliumSdk
 import UnityAds
 
-/// The Helium UnityAds adapter.
+/// The Helium Unity Ads adapter.
 final class UnityAdsAdapter: NSObject, PartnerAdapter {
     
     /// The version of the partner SDK.
@@ -31,7 +31,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// The human-friendly partner name.
     let partnerDisplayName = "Unity Ads"
         
-    /// The setUp completion received on setUp(), to be executed when UnityAds reports back its initialization status.
+    /// The setUp completion received on setUp(), to be executed when Unity Ads reports back its initialization status.
     private var setUpCompletion: ((Error?) -> Void)?
     
     /// The designated initializer for the adapter.
@@ -61,7 +61,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         metaData.set(.adapterVersionKey, value: adapterVersion)
         metaData.commit()
         
-        // Initialize UnityAds
+        // Initialize Unity Ads
         setUpCompletion = completion
         UnityAds.initialize(gameID, testMode: false, initializationDelegate: self)
     }
@@ -70,7 +70,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// - parameter request: Information about the ad load request.
     /// - parameter completion: Closure to be performed with the fetched info.
     func fetchBidderInformation(request: PreBidRequest, completion: @escaping ([String : String]?) -> Void) {
-        // UnityAds does not currently provide any bidding token
+        // Unity Ads does not currently provide any bidding token
         completion(nil)
     }
     
@@ -152,20 +152,20 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
     }
 }
 
-/// Convenience extension to access UnityAds credentials from the configuration.
+/// Convenience extension to access Unity Ads credentials from the configuration.
 private extension PartnerConfiguration {
     var gameID: String? { credentials[.gameIDKey] as? String }
 }
 
 private extension String {
-    /// UnityAds game ID credentials key.
+    /// Unity Ads game ID credentials key.
     static let gameIDKey = "game_id"
-    /// UnityAds metadata adapter version key.
+    /// Unity Ads metadata adapter version key.
     static let adapterVersionKey = "adapter_version"
-    /// UnityAds privacy userOverAgeLimit key.
+    /// Unity Ads privacy userOverAgeLimit key.
     static let userOverAgeLimitKey = "privacy.useroveragelimit"
-    /// UnityAds privacy GDPR consent key.
+    /// Unity Ads privacy GDPR consent key.
     static let gdprConsentKey = "gdpr.consent"
-    /// UnityAds privacy consent key.
+    /// Unity Ads privacy consent key.
     static let privacyConsentKey = "privacy.consent"
 }

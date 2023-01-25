@@ -14,7 +14,7 @@ import UIKit
 import HeliumSdk
 import UnityAds
 
-/// The Helium UnityAds adapter banner ad.
+/// The Helium Unity Ads adapter banner ad.
 final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
     
     /// The partner ad view to display inline. E.g. a banner view.

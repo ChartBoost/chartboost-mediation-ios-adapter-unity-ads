@@ -14,7 +14,7 @@ import UIKit
 import HeliumSdk
 import UnityAds
 
-/// Base class for Helium UnityAds adapter ads.
+/// Base class for Helium Unity Ads adapter ads.
 class UnityAdsAdapterAd: NSObject {
     
     /// The partner adapter that created this ad.
