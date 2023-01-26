@@ -2,14 +2,14 @@ Pod::Spec.new do |spec|
   spec.name        = 'ChartboostMediationAdapterUnityAds'
   spec.version     = '4.4.4.1.0'
   spec.license     = { :type => 'MIT', :file => 'LICENSE.md' }
-  spec.homepage    = 'https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unityads'
+  spec.homepage    = 'https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unity-ads'
   spec.authors     = { 'Chartboost' => 'https://www.chartboost.com/' }
   spec.summary     = 'Chartboost Mediation iOS SDK Unity Ads adapter.'
   spec.description = 'Unity Ads Adapters for mediating through Chartboost Mediation. Supported ad formats: Banner, Interstitial, and Rewarded.'
 
   # Source
   spec.module_name  = 'ChartboostMediationAdapterUnityAds'
-  spec.source       = { :git => 'https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unityads.git', :tag => spec.version }
+  spec.source       = { :git => 'https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unity-ads.git', :tag => spec.version }
   spec.source_files = 'Source/**/*.{swift}'
 
   # Minimum supported versions
