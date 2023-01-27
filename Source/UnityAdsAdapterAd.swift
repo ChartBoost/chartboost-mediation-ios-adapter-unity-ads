@@ -5,7 +5,7 @@
 
 //
 //  UnityAdsAdapterAd.swift
-//  HeliumAdapterUnityAds
+//  ChartboostMediationAdapterUnityAds
 //
 //  Created by Daniel Barros on 10/6/22.
 //
@@ -14,7 +14,7 @@ import ChartboostMediationSDK
 import UIKit
 import UnityAds
 
-/// Base class for Helium Unity Ads adapter ads.
+/// Base class for Chartboost Mediation Unity Ads adapter ads.
 class UnityAdsAdapterAd: NSObject {
     
     /// The partner adapter that created this ad.

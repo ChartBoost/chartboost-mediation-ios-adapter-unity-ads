@@ -5,7 +5,7 @@
 
 //
 //  UnityAdsAdapterFullscreenAd.swift
-//  HeliumAdapterUnityAds
+//  ChartboostMediationAdapterUnityAds
 //
 //  Created by Daniel Barros on 10/6/22.
 //
@@ -14,7 +14,7 @@ import ChartboostMediationSDK
 import UIKit
 import UnityAds
 
-/// The Helium Unity Ads adapter fullscreen ad.
+/// The Chartboost Mediation Unity Ads adapter fullscreen ad.
 final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
     
     /// The partner ad view to display inline. E.g. a banner view.
