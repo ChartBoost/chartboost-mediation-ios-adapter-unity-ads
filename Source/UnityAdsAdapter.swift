@@ -132,6 +132,102 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
             throw error(.loadFailureUnsupportedAdFormat)
         }
     }
+    
+    /// Maps a partner setup error to a Helium error code.
+    /// Helium SDK calls this method when a setup completion is called with a partner error.
+    ///
+    /// A default implementation is provided that returns `nil`.
+    /// Only implement if the partner SDK provides its own list of error codes that can be mapped to Helium's.
+    /// If some case cannot be mapped return `nil` to let Helium choose a default error code.
+    func mapSetUpError(_ error: Error) -> HeliumError.Code? {
+        guard let code = UnityAdsInitializationError(rawValue: (error as NSError).code) else {
+            return nil
+        }
+        switch code {
+        case .initializationErrorInternalError:
+            return .initializationFailureUnknown
+        case .initializationErrorInvalidArgument:
+            return .initializationFailureInvalidCredentials
+        case .initializationErrorAdBlockerDetected:
+            return .initializationFailureAdBlockerDetected
+        @unknown default:
+            return nil
+        }
+    }
+    
+    /// Maps a partner load error to a Helium error code.
+    /// Helium SDK calls this method when a load completion is called with a partner error.
+    ///
+    /// A default implementation is provided that returns `nil`.
+    /// Only implement if the partner SDK provides its own list of error codes that can be mapped to Helium's.
+    /// If some case cannot be mapped return `nil` to let Helium choose a default error code.
+    func mapLoadError(_ error: Error) -> HeliumError.Code? {
+        if let error = error as? UADSBannerError {
+            // Banner error code
+            guard let code = UADSBannerErrorCode(rawValue: error.code) else {
+                return nil
+            }
+            switch code {
+            case .unknown, .nativeError, .webViewError:
+                return .loadFailureUnknown
+            case .noFillError:
+                return .loadFailureNoFill
+            @unknown default:
+                return nil
+            }
+        } else {
+            // Full-screen ad error code
+            guard let code = UnityAdsLoadError(rawValue: (error as NSError).code) else {
+                return nil
+            }
+            switch code {
+            case .initializeFailed:
+                return .loadFailurePartnerNotInitialized
+            case .internal:
+                return .loadFailureUnknown
+            case .invalidArgument:
+                return .loadFailureInvalidAdRequest
+            case .noFill:
+                return .loadFailureNoFill
+            case .timeout:
+                return .loadFailureTimeout
+            @unknown default:
+                return nil
+            }
+        }
+    }
+    
+    /// Maps a partner show error to a Helium error code.
+    /// Helium SDK calls this method when a show completion is called with a partner error.
+    ///
+    /// A default implementation is provided that returns `nil`.
+    /// Only implement if the partner SDK provides its own list of error codes that can be mapped to Helium's.
+    /// If some case cannot be mapped return `nil` to let Helium choose a default error code.
+    func mapShowError(_ error: Error) -> HeliumError.Code? {
+        guard let code = UnityAdsShowError(rawValue: (error as NSError).code) else {
+            return nil
+        }
+        switch code {
+        case .showErrorNotInitialized:
+            return .showFailureNotInitialized
+        case .showErrorNotReady:
+            return .showFailureAdNotReady
+        case .showErrorVideoPlayerError:
+            return .showFailureVideoPlayerError
+        case .showErrorInvalidArgument:
+            return .showFailureUnknown
+        case .showErrorNoConnection:
+            return .showFailureNoConnectivity
+        case .showErrorAlreadyShowing:
+            return .showFailureShowInProgress
+        case .showErrorInternalError:
+            return .showFailureUnknown
+        case .showErrorTimeout:
+            return .showFailureTimeout
+        @unknown default:
+            return nil
+        }
+    }
 }
 
 extension UnityAdsAdapter: UnityAdsInitializationDelegate {
