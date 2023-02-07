@@ -49,7 +49,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         
         // Set mediation metadata
         let metaData = UADSMediationMetaData()
-        metaData.setName("Helium")
+        metaData.setName("Chartboost")
         metaData.setVersion(Helium.sdkVersion)
         metaData.set(.adapterVersionKey, value: adapterVersion)
         metaData.commit()
