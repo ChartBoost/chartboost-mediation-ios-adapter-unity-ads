@@ -132,7 +132,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// A default implementation is provided that returns `nil`.
     /// Only implement if the partner SDK provides its own list of error codes that can be mapped to Helium's.
     /// If some case cannot be mapped return `nil` to let Helium choose a default error code.
-    func mapSetUpError(_ error: Error) -> HeliumError.Code? {
+    func mapSetUpError(_ error: Error) -> ChartboostMediationError.Code? {
         guard let code = UnityAdsInitializationError(rawValue: (error as NSError).code) else {
             return nil
         }
@@ -154,7 +154,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// A default implementation is provided that returns `nil`.
     /// Only implement if the partner SDK provides its own list of error codes that can be mapped to Helium's.
     /// If some case cannot be mapped return `nil` to let Helium choose a default error code.
-    func mapLoadError(_ error: Error) -> HeliumError.Code? {
+    func mapLoadError(_ error: Error) -> ChartboostMediationError.Code? {
         if let error = error as? UADSBannerError {
             // Banner error code
             guard let code = UADSBannerErrorCode(rawValue: error.code) else {
@@ -196,7 +196,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// A default implementation is provided that returns `nil`.
     /// Only implement if the partner SDK provides its own list of error codes that can be mapped to Helium's.
     /// If some case cannot be mapped return `nil` to let Helium choose a default error code.
-    func mapShowError(_ error: Error) -> HeliumError.Code? {
+    func mapShowError(_ error: Error) -> ChartboostMediationError.Code? {
         guard let code = UnityAdsShowError(rawValue: (error as NSError).code) else {
             return nil
         }
