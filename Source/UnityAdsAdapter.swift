@@ -71,6 +71,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// - parameter applies: `true` if GDPR applies, `false` if not, `nil` if the publisher has not provided this information.
     /// - parameter status: One of the `GDPRConsentStatus` values depending on the user's preference.
     func setGDPR(applies: Bool?, status: GDPRConsentStatus) {
+        // See https://docs.unity.com/ads/en/manual/GDPRCompliance
         // Consent only applies if the user is subject to GDPR
         guard applies == true else {
             return
@@ -87,6 +88,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// - parameter hasGivenConsent: A boolean indicating if the user has given consent.
     /// - parameter privacyString: An IAB-compliant string indicating the CCPA status.
     func setCCPA(hasGivenConsent: Bool, privacyString: String) {
+        // See https://docs.unity.com/ads/en/manual/CCPACompliance
         let key = String.privacyConsentKey
         let privacyMetaData = UADSMetaData()
         privacyMetaData.set(key, value: hasGivenConsent)
@@ -97,6 +99,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// Indicates if the user is subject to COPPA or not.
     /// - parameter isChildDirected: `true` if the user is subject to COPPA, `false` otherwise.
     func setCOPPA(isChildDirected: Bool) {
+        // See https://docs.unity.com/ads/en/manual/COPPACompliance
         let value = !isChildDirected  // Child-directed means the user is not over the age limit.
         let key = String.userOverAgeLimitKey
         let ageGateMetaData = UADSMetaData()
