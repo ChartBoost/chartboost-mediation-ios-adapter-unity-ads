@@ -164,10 +164,14 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
                 return nil
             }
             switch code {
-            case .unknown, .nativeError, .webViewError:
+            case .codeUnknown, .codeNativeError, .codeWebViewError:
                 return .loadFailureUnknown
-            case .noFillError:
+            case .codeNoFillError:
                 return .loadFailureNoFill
+            case .initializeFailed:
+                return .loadFailurePartnerNotInitialized
+            case .invalidArgument:
+                return .loadFailureInvalidAdRequest
             @unknown default:
                 return nil
             }
