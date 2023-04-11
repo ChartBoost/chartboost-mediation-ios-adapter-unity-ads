@@ -6,6 +6,10 @@ Adapters are compatible with any Chartboost Mediation SDK version within that ma
 ### 4.4.6.0.0
 - This version of the adapters has been certified with UnityAds 4.6.0.
 
+### 4.4.5.0.1
+- Fix showing of non-programmatic ads.
+- This version of the adapters has been certified with UnityAds 4.5.0.
+
 ### 4.4.5.0.0
 - This version of the adapters has been certified with UnityAds 4.5.0.
 
