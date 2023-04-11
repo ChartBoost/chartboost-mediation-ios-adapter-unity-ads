@@ -53,7 +53,9 @@ final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
             completion(.failure(error))
             return
         }
-        options.objectId = payloadIdentifier
+        if request.adm != nil {
+            options.objectId = payloadIdentifier
+        }
         
         // Show
         showCompletion = completion
