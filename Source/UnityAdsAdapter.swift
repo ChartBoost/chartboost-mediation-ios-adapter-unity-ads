@@ -23,7 +23,10 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     
     /// The human-friendly partner name.
     let partnerDisplayName = "Unity Ads"
-        
+    
+    /// Ad storage managed by Chartboost Mediation SDK.
+    let storage: PartnerAdapterStorage
+    
     /// The setUp completion received on setUp(), to be executed when Unity Ads reports back its initialization status.
     private var setUpCompletion: ((Error?) -> Void)?
     
@@ -31,7 +34,9 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// Chartboost Mediation SDK will use this constructor to create instances of conforming types.
     /// - parameter storage: An object that exposes storage managed by the Chartboost Mediation SDK to the adapter.
     /// It includes a list of created `PartnerAd` instances. You may ignore this parameter if you don't need it.
-    init(storage: PartnerAdapterStorage) {}
+    init(storage: PartnerAdapterStorage) {
+        self.storage = storage
+    }
     
     /// Does any setup needed before beginning to load ads.
     /// - parameter configuration: Configuration data for the adapter to set up.
@@ -119,6 +124,17 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         guard !request.partnerPlacement.isEmpty else {
             throw error(.loadFailureInvalidPartnerPlacement)
         }
+        
+        // Prevent multiple loads for the same partner placement, since the partner SDK cannot handle them.
+        // Banner loads are allowed so a banner prefetch can happen during auto-refresh.
+        // ChartboostMediationSDK 4.x does not support loading more than 2 banners with the same placement, and the partner may or may not support it.
+        guard !storage.ads.contains(where: { $0.request.partnerPlacement == request.partnerPlacement })
+            || request.format == .banner
+        else {
+            log("Failed to load ad for already loading placement \(request.partnerPlacement)")
+            throw error(.loadFailureLoadInProgress)
+        }
+        
         switch request.format {
         case .interstitial, .rewarded:
             return try UnityAdsAdapterFullscreenAd(adapter: self, request: request, delegate: delegate)
