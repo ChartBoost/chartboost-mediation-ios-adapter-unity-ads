@@ -124,7 +124,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
             return try UnityAdsAdapterFullscreenAd(adapter: self, request: request, delegate: delegate)
         case .banner:
             return try UnityAdsAdapterBannerAd(adapter: self, request: request, delegate: delegate)
-        @unknown default:
+        default:
             throw error(.loadFailureUnsupportedAdFormat)
         }
     }
