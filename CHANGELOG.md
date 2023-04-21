@@ -4,6 +4,7 @@ Note the first digit of every adapter version corresponds to the major version o
 Adapters are compatible with any Chartboost Mediation SDK version within that major version.
 
 ### 4.4.6.0.0
+- Prevent multiple fullscreen loads for the same placement from happening concurrently.
 - This version of the adapters has been certified with UnityAds 4.6.0.
 
 ### 4.4.5.0.1
