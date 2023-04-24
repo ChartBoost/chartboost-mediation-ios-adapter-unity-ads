@@ -63,4 +63,8 @@ extension UnityAdsAdapterBannerAd: UADSBannerViewDelegate {
         log(.didClick(error: nil))
         delegate?.didClick(self, details: [:]) ?? log(.delegateUnavailable)
     }
+
+    func bannerViewDidLeaveApplication(_ bannerView: UADSBannerView!) {
+        log(.delegateCallIgnored)
+    }
 }

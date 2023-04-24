@@ -16,14 +16,17 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// The version of the adapter.
     /// It should have either 5 or 6 digits separated by periods, where the first digit is Chartboost Mediation SDK's major version, the last digit is the adapter's build version, and intermediate digits are the partner SDK's version.
     /// Format: `<Chartboost Mediation major version>.<Partner major version>.<Partner minor version>.<Partner patch version>.<Partner build version>.<Adapter build version>` where `.<Partner build version>` is optional.
-    let adapterVersion = "4.4.5.0.1"
+    let adapterVersion = "4.4.6.0.0"
     
     /// The partner's unique identifier.
     let partnerIdentifier = "unity"
     
     /// The human-friendly partner name.
     let partnerDisplayName = "Unity Ads"
-        
+    
+    /// Ad storage managed by Chartboost Mediation SDK.
+    let storage: PartnerAdapterStorage
+    
     /// The setUp completion received on setUp(), to be executed when Unity Ads reports back its initialization status.
     private var setUpCompletion: ((Error?) -> Void)?
     
@@ -31,7 +34,9 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// Chartboost Mediation SDK will use this constructor to create instances of conforming types.
     /// - parameter storage: An object that exposes storage managed by the Chartboost Mediation SDK to the adapter.
     /// It includes a list of created `PartnerAd` instances. You may ignore this parameter if you don't need it.
-    init(storage: PartnerAdapterStorage) {}
+    init(storage: PartnerAdapterStorage) {
+        self.storage = storage
+    }
     
     /// Does any setup needed before beginning to load ads.
     /// - parameter configuration: Configuration data for the adapter to set up.
@@ -119,6 +124,17 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         guard !request.partnerPlacement.isEmpty else {
             throw error(.loadFailureInvalidPartnerPlacement)
         }
+        
+        // Prevent multiple loads for the same partner placement, since the partner SDK cannot handle them.
+        // Banner loads are allowed so a banner prefetch can happen during auto-refresh.
+        // ChartboostMediationSDK 4.x does not support loading more than 2 banners with the same placement, and the partner may or may not support it.
+        guard !storage.ads.contains(where: { $0.request.partnerPlacement == request.partnerPlacement })
+            || request.format == .banner
+        else {
+            log("Failed to load ad for already loading placement \(request.partnerPlacement)")
+            throw error(.loadFailureLoadInProgress)
+        }
+        
         switch request.format {
         case .interstitial, .rewarded:
             return try UnityAdsAdapterFullscreenAd(adapter: self, request: request, delegate: delegate)
@@ -164,10 +180,14 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
                 return nil
             }
             switch code {
-            case .unknown, .nativeError, .webViewError:
+            case .codeUnknown, .codeNativeError, .codeWebViewError:
                 return .loadFailureUnknown
-            case .noFillError:
+            case .codeNoFillError:
                 return .loadFailureNoFill
+            case .initializeFailed:
+                return .loadFailurePartnerNotInitialized
+            case .invalidArgument:
+                return .loadFailureInvalidAdRequest
             @unknown default:
                 return nil
             }
