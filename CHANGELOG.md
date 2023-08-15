@@ -4,6 +4,7 @@ Note the first digit of every adapter version corresponds to the major version o
 Adapters are compatible with any Chartboost Mediation SDK version within that major version.
 
 ### 4.4.8.0.0
+- An impression is logged when `UADSBannerViewDelegate.bannerViewDidShow` is called.
 - This version of the adapters has been certified with UnityAds 4.8.0.
 
 ### 4.4.7.0.0
