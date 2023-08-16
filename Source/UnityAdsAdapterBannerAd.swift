@@ -49,6 +49,12 @@ extension UnityAdsAdapterBannerAd: UADSBannerViewDelegate {
         loadCompletion?(.success([:])) ?? log(.loadResultIgnored)
         loadCompletion = nil
     }
+
+    func bannerViewDidShow(_ bannerView: UADSBannerView!) {
+        // Report show success
+        log(.showSucceeded)
+        delegate?.didTrackImpression(self, details: [:]) ?? log(.delegateUnavailable)
+    }
     
     func bannerViewDidError(_ bannerView: UADSBannerView?, error: UADSBannerError?) {
         // Report load failure
