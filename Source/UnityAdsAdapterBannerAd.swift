@@ -19,12 +19,19 @@ final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
     /// - parameter completion: Closure to be performed once the ad has been loaded.
     func load(with viewController: UIViewController?, completion: @escaping (Result<PartnerEventDetails, Error>) -> Void) {
         log(.loadStarted)
-        
+
+        // Fail if we cannot fit a fixed size banner in the requested size.
+        guard let size = fixedBannerSize(for: request.size ?? IABStandardAdSize) else {
+            let error = error(.loadFailureInvalidBannerSize)
+            log(.loadFailed(error))
+            return completion(.failure(error))
+        }
+
         // Save completion for later
         loadCompletion = completion
         
         // Create the banner
-        let banner = UADSBannerView(placementId: request.partnerPlacement, size: request.size ?? IABStandardAdSize)
+        let banner = UADSBannerView(placementId: request.partnerPlacement, size: size)
         banner.delegate = self
         inlineView = banner
         
@@ -46,7 +53,14 @@ extension UnityAdsAdapterBannerAd: UADSBannerViewDelegate {
     func bannerViewDidLoad(_ bannerView: UADSBannerView?) {
         // Report load success
         log(.loadSucceeded)
-        loadCompletion?(.success([:])) ?? log(.loadResultIgnored)
+
+        var partnerDetails: [String: String] = [:]
+        if let loadedSize = fixedBannerSize(for: request.size ?? IABStandardAdSize) {
+            partnerDetails["bannerWidth"] = "\(loadedSize.width)"
+            partnerDetails["bannerHeight"] = "\(loadedSize.height)"
+            partnerDetails["bannerType"] = "0" // Fixed banner
+        }
+        loadCompletion?(.success(partnerDetails)) ?? log(.loadResultIgnored)
         loadCompletion = nil
     }
 
@@ -72,5 +86,22 @@ extension UnityAdsAdapterBannerAd: UADSBannerViewDelegate {
 
     func bannerViewDidLeaveApplication(_ bannerView: UADSBannerView!) {
         log(.delegateCallIgnored)
+    }
+}
+
+// MARK: - Helpers
+extension UnityAdsAdapterBannerAd {
+    private func fixedBannerSize(for requestedSize: CGSize) -> CGSize? {
+        let sizes = [IABLeaderboardAdSize, IABMediumAdSize, IABStandardAdSize]
+        // Find the largest size that can fit in the requested size.
+        for size in sizes {
+            // If height is 0, the pub has requested an ad of any height, so only the width matters.
+            if requestedSize.width >= size.width &&
+                (size.height == 0 || requestedSize.height >= size.height) {
+                return size
+            }
+        }
+        // The requested size cannot fit any fixed size banners.
+        return nil
     }
 }
