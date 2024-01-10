@@ -10,6 +10,7 @@ Pod::Spec.new do |spec|
   # Source
   spec.module_name  = 'ChartboostMediationAdapterUnityAds'
   spec.source       = { :git => 'https://github.com/ChartBoost/chartboost-mediation-ios-adapter-unity-ads.git', :tag => spec.version }
+  spec.resource_bundles = { 'ChartboostMediationAdapterUnityAds' => ['PrivacyInfo.xcprivacy'] }
   spec.source_files = 'Source/**/*.{swift}'
 
   # Minimum supported versions
