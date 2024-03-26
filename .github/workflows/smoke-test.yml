@@ -10,6 +10,6 @@ on:
 
 jobs:
   validate-podspec:
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - uses: chartboost/chartboost-mediation-ios-actions/adapter-smoke-test@v1
