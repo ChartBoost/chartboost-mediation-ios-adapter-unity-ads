@@ -14,10 +14,14 @@ final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
     /// Should be nil for full-screen ads.
     var inlineView: UIView?
     
+    /// The loaded partner ad banner size.
+    /// Should be `nil` for full-screen ads.
+    var bannerSize: PartnerBannerSize?
+    
     /// Loads an ad.
     /// - parameter viewController: The view controller on which the ad will be presented on. Needed on load for some banners.
     /// - parameter completion: Closure to be performed once the ad has been loaded.
-    func load(with viewController: UIViewController?, completion: @escaping (Result<PartnerEventDetails, Error>) -> Void) {
+    func load(with viewController: UIViewController?, completion: @escaping (Result<PartnerDetails, Error>) -> Void) {
         log(.loadStarted)
 
         // Fail if we cannot fit a fixed size banner in the requested size.
@@ -26,6 +30,7 @@ final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
             log(.loadFailed(error))
             return completion(.failure(error))
         }
+        bannerSize = PartnerBannerSize(size: size, type: .fixed)
 
         // Save completion for later
         loadCompletion = completion
@@ -43,7 +48,7 @@ final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
     /// It will never get called for banner ads. You may leave the implementation blank for that ad format.
     /// - parameter viewController: The view controller on which the ad will be presented on.
     /// - parameter completion: Closure to be performed once the ad has been shown.
-    func show(with viewController: UIViewController, completion: @escaping (Result<PartnerEventDetails, Error>) -> Void) {
+    func show(with viewController: UIViewController, completion: @escaping (Result<PartnerDetails, Error>) -> Void) {
         // no-op
     }
 }
@@ -53,14 +58,7 @@ extension UnityAdsAdapterBannerAd: UADSBannerViewDelegate {
     func bannerViewDidLoad(_ bannerView: UADSBannerView?) {
         // Report load success
         log(.loadSucceeded)
-
-        var partnerDetails: [String: String] = [:]
-        if let loadedSize = fixedBannerSize(for: request.size ?? IABStandardAdSize) {
-            partnerDetails["bannerWidth"] = "\(loadedSize.width)"
-            partnerDetails["bannerHeight"] = "\(loadedSize.height)"
-            partnerDetails["bannerType"] = "0" // Fixed banner
-        }
-        loadCompletion?(.success(partnerDetails)) ?? log(.loadResultIgnored)
+        loadCompletion?(.success([:])) ?? log(.loadResultIgnored)
         loadCompletion = nil
     }
 
