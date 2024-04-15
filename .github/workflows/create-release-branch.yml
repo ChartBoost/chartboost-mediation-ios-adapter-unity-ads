@@ -23,7 +23,7 @@ env:
 
 jobs:
   create-release-branch:
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - uses: chartboost/chartboost-mediation-ios-actions/create-adapter-release-branch@v1
         with:
