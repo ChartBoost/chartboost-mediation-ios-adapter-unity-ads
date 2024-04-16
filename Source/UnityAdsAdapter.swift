@@ -19,7 +19,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     let adapterVersion = "4.4.10.0.0"
     
     /// The partner's unique identifier.
-    let partnerIdentifier = "unity"
+    let partnerID = "unity"
     
     /// The human-friendly partner name.
     let partnerDisplayName = "Unity Ads"
@@ -28,8 +28,8 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     let storage: PartnerAdapterStorage
     
     /// The setUp completion received on setUp(), to be executed when Unity Ads reports back its initialization status.
-    private var setUpCompletion: ((Error?) -> Void)?
-    
+    private var setUpCompletion: ((Result<PartnerDetails, Error>) -> Void)?
+
     /// The designated initializer for the adapter.
     /// Chartboost Mediation SDK will use this constructor to create instances of conforming types.
     /// - parameter storage: An object that exposes storage managed by the Chartboost Mediation SDK to the adapter.
@@ -41,14 +41,14 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// Does any setup needed before beginning to load ads.
     /// - parameter configuration: Configuration data for the adapter to set up.
     /// - parameter completion: Closure to be performed by the adapter when it's done setting up. It should include an error indicating the cause for failure or `nil` if the operation finished successfully.
-    func setUp(with configuration: PartnerConfiguration, completion: @escaping (Error?) -> Void) {
+    func setUp(with configuration: PartnerConfiguration, completion: @escaping (Result<PartnerDetails, Error>) -> Void) {
         log(.setUpStarted)
         
         // Get credentials, fail early if they are unavailable
         guard let gameID = configuration.gameID else {
             let error = error(.initializationFailureInvalidCredentials, description: "Missing \(String.gameIDKey)")
             log(.setUpFailed(error))
-            completion(error)
+            completion(.failure(error))
             return
         }
         
@@ -67,9 +67,10 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// Fetches bidding tokens needed for the partner to participate in an auction.
     /// - parameter request: Information about the ad load request.
     /// - parameter completion: Closure to be performed with the fetched info.
-    func fetchBidderInformation(request: PreBidRequest, completion: @escaping ([String : String]?) -> Void) {
+    func fetchBidderInformation(request: PartnerAdPreBidRequest, completion: @escaping (Result<[String : String], Error>) -> Void) {
         // Unity Ads does not currently provide any bidding token
-        completion(nil)
+        log(.fetchBidderInfoNotSupported)
+        completion(.success([:]))
     }
     
     /// Indicates if GDPR applies or not and the user's GDPR consent status.
@@ -129,24 +130,20 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         // Banner loads are allowed so a banner prefetch can happen during auto-refresh.
         // ChartboostMediationSDK 4.x does not support loading more than 2 banners with the same placement, and the partner may or may not support it.
         guard !storage.ads.contains(where: { $0.request.partnerPlacement == request.partnerPlacement })
-            || request.format == .banner
+            || request.format == PartnerAdFormats.banner
+            || request.format == PartnerAdFormats.adaptiveBanner
         else {
             log("Failed to load ad for already loading placement \(request.partnerPlacement)")
             throw error(.loadFailureLoadInProgress)
         }
         
         switch request.format {
-        case .interstitial, .rewarded:
+        case PartnerAdFormats.interstitial, PartnerAdFormats.rewarded:
             return try UnityAdsAdapterFullscreenAd(adapter: self, request: request, delegate: delegate)
-        case .banner:
+        case PartnerAdFormats.banner, PartnerAdFormats.adaptiveBanner:
             return try UnityAdsAdapterBannerAd(adapter: self, request: request, delegate: delegate)
         default:
-            // Not using the `.adaptiveBanner` case directly to maintain backward compatibility with Chartboost Mediation 4.0
-            if request.format.rawValue == "adaptive_banner" {
-                return try UnityAdsAdapterBannerAd(adapter: self, request: request, delegate: delegate)
-            } else {
-                throw error(.loadFailureUnsupportedAdFormat)
-            }
+            throw error(.loadFailureUnsupportedAdFormat)
         }
     }
     
@@ -256,7 +253,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
     func initializationComplete() {
         // Report initialization success
         log(.setUpSucceded)
-        setUpCompletion?(nil) ?? log("Setup result ignored")
+        setUpCompletion?(.success([:])) ?? log("Setup result ignored")
         setUpCompletion = nil
     }
     
@@ -264,7 +261,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
         // Report initialization failure
         let error = partnerError(errorCode.rawValue, description: message)
         log(.setUpFailed(error))
-        setUpCompletion?(error) ?? log("Setup result ignored")
+        setUpCompletion?(.failure(error)) ?? log("Setup result ignored")
         setUpCompletion = nil
     }
 }
