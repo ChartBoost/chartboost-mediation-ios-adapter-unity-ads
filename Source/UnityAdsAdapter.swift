@@ -131,7 +131,6 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         // ChartboostMediationSDK 4.x does not support loading more than 2 banners with the same placement, and the partner may or may not support it.
         guard !storage.ads.contains(where: { $0.request.partnerPlacement == request.partnerPlacement })
             || request.format == PartnerAdFormats.banner
-            || request.format == PartnerAdFormats.adaptiveBanner
         else {
             log("Failed to load ad for already loading placement \(request.partnerPlacement)")
             throw error(.loadFailureLoadInProgress)
@@ -140,7 +139,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         switch request.format {
         case PartnerAdFormats.interstitial, PartnerAdFormats.rewarded:
             return try UnityAdsAdapterFullscreenAd(adapter: self, request: request, delegate: delegate)
-        case PartnerAdFormats.banner, PartnerAdFormats.adaptiveBanner:
+        case PartnerAdFormats.banner:
             return try UnityAdsAdapterBannerAd(adapter: self, request: request, delegate: delegate)
         default:
             throw error(.loadFailureUnsupportedAdFormat)
