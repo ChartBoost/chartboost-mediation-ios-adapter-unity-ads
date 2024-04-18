@@ -43,14 +43,6 @@ final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
         // Load it
         banner.load()
     }
-    
-    /// Shows a loaded ad.
-    /// It will never get called for banner ads. You may leave the implementation blank for that ad format.
-    /// - parameter viewController: The view controller on which the ad will be presented on.
-    /// - parameter completion: Closure to be performed once the ad has been shown.
-    func show(with viewController: UIViewController, completion: @escaping (Result<PartnerDetails, Error>) -> Void) {
-        // no-op
-    }
 }
 
 extension UnityAdsAdapterBannerAd: UADSBannerViewDelegate {
