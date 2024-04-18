@@ -8,15 +8,7 @@ import UIKit
 import UnityAds
 
 /// The Chartboost Mediation Unity Ads adapter fullscreen ad.
-final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerAd {
-    
-    /// The partner ad view to display inline. E.g. a banner view.
-    /// Should be nil for full-screen ads.
-    var inlineView: UIView? { nil }
-
-    /// The loaded partner ad banner size.
-    /// Should be `nil` for full-screen ads.
-    var bannerSize: PartnerBannerSize? { nil }
+final class UnityAdsAdapterFullscreenAd: UnityAdsAdapterAd, PartnerFullscreenAd {
 
     /// A unique identifier passed in Unity Ads load and show calls to identify the payload
     private let payloadIdentifier = UUID().uuidString
