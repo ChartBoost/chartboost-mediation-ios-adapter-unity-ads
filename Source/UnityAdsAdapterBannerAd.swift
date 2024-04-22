@@ -8,16 +8,13 @@ import UIKit
 import UnityAds
 
 /// The Chartboost Mediation Unity Ads adapter banner ad.
-final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
-    
-    /// The partner ad view to display inline. E.g. a banner view.
-    /// Should be nil for full-screen ads.
-    var inlineView: UIView?
-    
+final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerBannerAd {
+    /// The partner banner ad view to display.
+    var view: UIView?
+
     /// The loaded partner ad banner size.
-    /// Should be `nil` for full-screen ads.
-    var bannerSize: PartnerBannerSize?
-    
+    var size: PartnerBannerSize?
+
     /// Loads an ad.
     /// - parameter viewController: The view controller on which the ad will be presented on. Needed on load for some banners.
     /// - parameter completion: Closure to be performed once the ad has been loaded.
@@ -25,31 +22,23 @@ final class UnityAdsAdapterBannerAd: UnityAdsAdapterAd, PartnerAd {
         log(.loadStarted)
 
         // Fail if we cannot fit a fixed size banner in the requested size.
-        guard let size = fixedBannerSize(for: request.bannerSize) else {
+        guard let loadedSize = fixedBannerSize(for: request.bannerSize) else {
             let error = error(.loadFailureInvalidBannerSize)
             log(.loadFailed(error))
             return completion(.failure(error))
         }
-        bannerSize = PartnerBannerSize(size: size, type: .fixed)
+        size = PartnerBannerSize(size: loadedSize, type: .fixed)
 
         // Save completion for later
         loadCompletion = completion
         
         // Create the banner
-        let banner = UADSBannerView(placementId: request.partnerPlacement, size: size)
+        let banner = UADSBannerView(placementId: request.partnerPlacement, size: loadedSize)
         banner.delegate = self
-        inlineView = banner
-        
+        view = banner
+
         // Load it
         banner.load()
-    }
-    
-    /// Shows a loaded ad.
-    /// It will never get called for banner ads. You may leave the implementation blank for that ad format.
-    /// - parameter viewController: The view controller on which the ad will be presented on.
-    /// - parameter completion: Closure to be performed once the ad has been shown.
-    func show(with viewController: UIViewController, completion: @escaping (Result<PartnerDetails, Error>) -> Void) {
-        // no-op
     }
 }
 
