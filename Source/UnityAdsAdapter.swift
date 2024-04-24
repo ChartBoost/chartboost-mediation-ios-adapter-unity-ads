@@ -59,6 +59,10 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         metaData.set(.adapterVersionKey, value: adapterVersion)
         metaData.commit()
 
+        // Apply initial consents
+        setConsents(configuration.consents, modifiedKeys: Set(configuration.consents.keys))
+        setIsUserUnderage(configuration.isUserUnderage)
+
         // Initialize Unity Ads
         setUpCompletion = completion
         UnityAds.initialize(gameID, testMode: false, initializationDelegate: self)
