@@ -4,6 +4,7 @@
 // license that can be found in the LICENSE file.
 
 import Foundation
+import os.log
 import UnityAds
 
 @objc public class UnityAdsAdapterConfiguration: NSObject {
