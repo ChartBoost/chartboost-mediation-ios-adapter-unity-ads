@@ -23,4 +23,18 @@ import UnityAds
 
     /// The human-friendly partner name.
     @objc static let partnerDisplayName = "Unity Ads"
+
+    /// Flag that can optionally be set to enable the partner's debug mode.
+    /// Disabled by default.
+    @objc public static var debugMode: Bool {
+        get {
+            UnityAds.getDebugMode()
+        }
+        set {
+            UnityAds.setDebugMode(newValue)
+            os_log(.debug, log: log, "Unity Ads SDK test mode set to %{public}s", "\(newValue)")
+        }
+    }
+
+    private static let log = OSLog(subsystem: "com.chartboost.mediation.adapter.unityads", category: "Configuration")
 }
