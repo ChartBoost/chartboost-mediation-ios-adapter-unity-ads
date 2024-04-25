@@ -9,24 +9,24 @@ import UnityAds
 
 /// The Chartboost Mediation Unity Ads adapter.
 final class UnityAdsAdapter: NSObject, PartnerAdapter {
-    
+
     /// The version of the partner SDK.
     let partnerSDKVersion = UnityAds.getVersion()
-    
+
     /// The version of the adapter.
     /// It should have either 5 or 6 digits separated by periods, where the first digit is Chartboost Mediation SDK's major version, the last digit is the adapter's build version, and intermediate digits are the partner SDK's version.
     /// Format: `<Chartboost Mediation major version>.<Partner major version>.<Partner minor version>.<Partner patch version>.<Partner build version>.<Adapter build version>` where `.<Partner build version>` is optional.
     let adapterVersion = "4.4.10.0.0"
-    
+
     /// The partner's unique identifier.
     let partnerID = "unity"
-    
+
     /// The human-friendly partner name.
     let partnerDisplayName = "Unity Ads"
-    
+
     /// Ad storage managed by Chartboost Mediation SDK.
     let storage: PartnerAdapterStorage
-    
+
     /// The setUp completion received on setUp(), to be executed when Unity Ads reports back its initialization status.
     private var setUpCompletion: ((Result<PartnerDetails, Error>) -> Void)?
 
@@ -37,13 +37,13 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     init(storage: PartnerAdapterStorage) {
         self.storage = storage
     }
-    
+
     /// Does any setup needed before beginning to load ads.
     /// - parameter configuration: Configuration data for the adapter to set up.
     /// - parameter completion: Closure to be performed by the adapter when it's done setting up. It should include an error indicating the cause for failure or `nil` if the operation finished successfully.
     func setUp(with configuration: PartnerConfiguration, completion: @escaping (Result<PartnerDetails, Error>) -> Void) {
         log(.setUpStarted)
-        
+
         // Get credentials, fail early if they are unavailable
         guard let gameID = configuration.gameID else {
             let error = error(.initializationFailureInvalidCredentials, description: "Missing \(String.gameIDKey)")
@@ -51,19 +51,23 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
             completion(.failure(error))
             return
         }
-        
+
         // Set mediation metadata
         let metaData = UADSMediationMetaData()
         metaData.setName("Chartboost")
         metaData.setVersion(ChartboostMediation.sdkVersion)
         metaData.set(.adapterVersionKey, value: adapterVersion)
         metaData.commit()
-        
+
+        // Apply initial consents
+        setConsents(configuration.consents, modifiedKeys: Set(configuration.consents.keys))
+        setIsUserUnderage(configuration.isUserUnderage)
+
         // Initialize Unity Ads
         setUpCompletion = completion
         UnityAds.initialize(gameID, testMode: false, initializationDelegate: self)
     }
-    
+
     /// Fetches bidding tokens needed for the partner to participate in an auction.
     /// - parameter request: Information about the ad load request.
     /// - parameter completion: Closure to be performed with the fetched info.
@@ -72,41 +76,47 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         log(.fetchBidderInfoNotSupported)
         completion(.success([:]))
     }
-    
-    /// Indicates if GDPR applies or not and the user's GDPR consent status.
-    /// - parameter applies: `true` if GDPR applies, `false` if not, `nil` if the publisher has not provided this information.
-    /// - parameter status: One of the `GDPRConsentStatus` values depending on the user's preference.
-    func setGDPR(applies: Bool?, status: GDPRConsentStatus) {
-        // See https://docs.unity.com/ads/en/manual/GDPRCompliance
-        // Consent only applies if the user is subject to GDPR
-        guard applies == true else {
+
+    /// Indicates that the user consent has changed.
+    /// - parameter consents: The new consents value, including both modified and unmodified consents.
+    /// - parameter modifiedKeys: A set containing all the keys that changed.
+    func setConsents(_ consents: [ConsentKey: ConsentValue], modifiedKeys: Set<ConsentKey>) {
+        guard modifiedKeys.contains(partnerID)
+            || modifiedKeys.contains(ConsentKeys.gdprConsentGiven)
+            || modifiedKeys.contains(ConsentKeys.ccpaOptIn)
+        else {
             return
         }
-        let value = status == .granted
-        let key = String.gdprConsentKey
-        let gdprMetaData = UADSMetaData()
-        gdprMetaData.set(key, value: value)
-        gdprMetaData.commit()
-        log(.privacyUpdated(setting: "UADSMetaData", value: [key: value]))
-    }
-    
-    /// Indicates the CCPA status both as a boolean and as an IAB US privacy string.
-    /// - parameter hasGivenConsent: A boolean indicating if the user has given consent.
-    /// - parameter privacyString: An IAB-compliant string indicating the CCPA status.
-    func setCCPA(hasGivenConsent: Bool, privacyString: String) {
+        // See https://docs.unity.com/ads/en/manual/GDPRCompliance
+        let metadata = UADSMetaData()
+        switch consents[partnerID] ?? consents[ConsentKeys.gdprConsentGiven] {
+        case ConsentValues.granted:
+            metadata.set(.gdprConsentKey, value: true)
+        case ConsentValues.denied:
+            metadata.set(.gdprConsentKey, value: false)
+        default:
+            break   // do nothing
+        }
+
         // See https://docs.unity.com/ads/en/manual/CCPACompliance
-        let key = String.privacyConsentKey
-        let privacyMetaData = UADSMetaData()
-        privacyMetaData.set(key, value: hasGivenConsent)
-        privacyMetaData.commit()
-        log(.privacyUpdated(setting: "UADSMetaData", value: [key: hasGivenConsent]))
+        switch consents[ConsentKeys.ccpaOptIn] {
+        case ConsentValues.granted:
+            metadata.set(.privacyConsentKey, value: true)
+        case ConsentValues.denied:
+            metadata.set(.privacyConsentKey, value: false)
+        default:
+            break   // do nothing
+        }
+
+        metadata.commit()
+        log(.privacyUpdated(setting: "UADSMetaData", value: metadata.storageContents))
     }
-    
-    /// Indicates if the user is subject to COPPA or not.
-    /// - parameter isChildDirected: `true` if the user is subject to COPPA, `false` otherwise.
-    func setCOPPA(isChildDirected: Bool) {
+
+    /// Indicates that the user is underage signal has changed.
+    /// - parameter isUserUnderage: `true` if the user is underage as determined by the publisher, `false` otherwise.
+    func setIsUserUnderage(_ isUserUnderage: Bool) {
         // See https://docs.unity.com/ads/en/manual/COPPACompliance
-        let value = !isChildDirected  // Child-directed means the user is not over the age limit.
+        let value = !isUserUnderage  // Child-directed means the user is not over the age limit.
         let key = String.userOverAgeLimitKey
         let ageGateMetaData = UADSMetaData()
         ageGateMetaData.set(key, value: value)
