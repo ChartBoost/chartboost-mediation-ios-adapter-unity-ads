@@ -11,18 +11,26 @@ import UnityAds
 final class UnityAdsAdapter: NSObject, PartnerAdapter {
 
     /// The version of the partner SDK.
-    let partnerSDKVersion = UnityAds.getVersion()
+    var partnerSDKVersion: String {
+        UnityAdsAdapterConfiguration.partnerSDKVersion
+    }
 
     /// The version of the adapter.
     /// It should have either 5 or 6 digits separated by periods, where the first digit is Chartboost Mediation SDK's major version, the last digit is the adapter's build version, and intermediate digits are the partner SDK's version.
     /// Format: `<Chartboost Mediation major version>.<Partner major version>.<Partner minor version>.<Partner patch version>.<Partner build version>.<Adapter build version>` where `.<Partner build version>` is optional.
-    let adapterVersion = "4.4.10.0.0"
+    var adapterVersion: String {
+        UnityAdsAdapterConfiguration.adapterVersion
+    }
 
     /// The partner's unique identifier.
-    let partnerID = "unity"
+    var partnerID: String {
+        UnityAdsAdapterConfiguration.partnerID
+    }
 
     /// The human-friendly partner name.
-    let partnerDisplayName = "Unity Ads"
+    var partnerDisplayName: String {
+        UnityAdsAdapterConfiguration.partnerDisplayName
+    }
 
     /// Ad storage managed by Chartboost Mediation SDK.
     let storage: PartnerAdapterStorage
