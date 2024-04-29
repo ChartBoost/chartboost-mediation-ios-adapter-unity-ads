@@ -280,7 +280,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
     func initializationComplete() {
         // Report initialization success
         log(.setUpSucceded)
-        setUpCompletion?(.success([:])) ?? log("Setup result ignored")
+        setUpCompletion?(.success([:])) ?? log(.delegateCallIgnored)
         setUpCompletion = nil
     }
     
@@ -288,7 +288,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
         // Report initialization failure
         let error = partnerError(errorCode.rawValue, description: message)
         log(.setUpFailed(error))
-        setUpCompletion?(.failure(error)) ?? log("Setup result ignored")
+        setUpCompletion?(.failure(error)) ?? log(.delegateCallIgnored)
         setUpCompletion = nil
     }
 }
