@@ -96,24 +96,30 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
             return
         }
         // See https://docs.unity.com/ads/en/manual/GDPRCompliance
+        // Ignore if the consent status has been directly set by publisher via the configuration class.
         let metadata = UADSMetaData()
-        switch consents[partnerID] ?? consents[ConsentKeys.gdprConsentGiven] {
-        case ConsentValues.granted:
-            metadata.set(.gdprConsentKey, value: true)
-        case ConsentValues.denied:
-            metadata.set(.gdprConsentKey, value: false)
-        default:
-            break   // do nothing
+        if !UnityAdsAdapterConfiguration.isGDPRConsentOverriden {
+            switch consents[partnerID] ?? consents[ConsentKeys.gdprConsentGiven] {
+            case ConsentValues.granted:
+                metadata.set(.gdprConsentKey, value: true)
+            case ConsentValues.denied:
+                metadata.set(.gdprConsentKey, value: false)
+            default:
+                break   // do nothing
+            }
         }
 
         // See https://docs.unity.com/ads/en/manual/CCPACompliance
-        switch consents[ConsentKeys.ccpaOptIn] {
-        case ConsentValues.granted:
-            metadata.set(.privacyConsentKey, value: true)
-        case ConsentValues.denied:
-            metadata.set(.privacyConsentKey, value: false)
-        default:
-            break   // do nothing
+        // Ignore if the consent status has been directly set by publisher via the configuration class.
+        if !UnityAdsAdapterConfiguration.isPrivacyConsentOverriden {
+            switch consents[ConsentKeys.ccpaOptIn] {
+            case ConsentValues.granted:
+                metadata.set(.privacyConsentKey, value: true)
+            case ConsentValues.denied:
+                metadata.set(.privacyConsentKey, value: false)
+            default:
+                break   // do nothing
+            }
         }
 
         metadata.commit()

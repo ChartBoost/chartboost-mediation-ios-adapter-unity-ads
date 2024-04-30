@@ -37,5 +37,33 @@ import UnityAds
         }
     }
 
+    /// Use to manually set the consent status on the Pangle SDK.
+    /// This is generally unnecessary as the Mediation SDK will set the consent status automatically based on the latest consent info.
+    @objc public static func setGDPRConsentOverride(_ consent: Bool) {
+        isGDPRConsentOverriden = true
+        // See https://docs.unity.com/ads/en/manual/GDPRCompliance
+        let metadata = UADSMetaData()
+        metadata.set("gdpr.consent", value: consent)
+        metadata.commit()
+        os_log(.info, log: log, "UnityAds SDK GDPR consent override set to %{public}s", "\(consent)")
+    }
+
+    /// Use to manually set the consent status on the Pangle SDK.
+    /// This is generally unnecessary as the Mediation SDK will set the consent status automatically based on the latest consent info.
+    @objc public static func setPrivacyConsentOverride(_ consent: Bool) {
+        isPrivacyConsentOverriden = true
+        // See https://docs.unity.com/ads/en/manual/CCPACompliance
+        let metadata = UADSMetaData()
+        metadata.set("privacy.consent", value: consent)
+        metadata.commit()
+        os_log(.info, log: log, "UnityAds SDK privacy consent override set to %{public}s", "\(consent)")
+    }
+
+    /// Internal flag that indicates if the GDPR consent has been overriden by the publisher.
+    static private(set) var isGDPRConsentOverriden = false
+
+    /// Internal flag that indicates if the Privacy consent has been overriden by the publisher.
+    static private(set) var isPrivacyConsentOverriden = false
+
     private static let log = OSLog(subsystem: "com.chartboost.mediation.adapter.unityads", category: "Configuration")
 }
