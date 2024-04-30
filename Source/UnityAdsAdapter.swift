@@ -168,7 +168,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         
         // Prevent multiple loads for the same partner placement, since the partner SDK cannot handle them.
         guard !storage.ads.contains(where: { $0.request.partnerPlacement == request.partnerPlacement }) else {
-            log("Failed to load ad for already loading placement \(request.partnerPlacement)")
+            log(.skippedLoadForAlreadyLoadingPlacement(request))
             throw error(.loadFailureLoadInProgress)
         }
         
@@ -286,7 +286,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
     func initializationComplete() {
         // Report initialization success
         log(.setUpSucceded)
-        setUpCompletion?(.success([:])) ?? log("Setup result ignored")
+        setUpCompletion?(.success([:])) ?? log(.delegateCallIgnored)
         setUpCompletion = nil
     }
     
@@ -294,7 +294,7 @@ extension UnityAdsAdapter: UnityAdsInitializationDelegate {
         // Report initialization failure
         let error = partnerError(errorCode.rawValue, description: message)
         log(.setUpFailed(error))
-        setUpCompletion?(.failure(error)) ?? log("Setup result ignored")
+        setUpCompletion?(.failure(error)) ?? log(.delegateCallIgnored)
         setUpCompletion = nil
     }
 }
