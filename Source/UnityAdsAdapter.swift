@@ -9,28 +9,9 @@ import UnityAds
 
 /// The Chartboost Mediation Unity Ads adapter.
 final class UnityAdsAdapter: NSObject, PartnerAdapter {
-
-    /// The version of the partner SDK.
-    var partnerSDKVersion: String {
-        UnityAdsAdapterConfiguration.partnerSDKVersion
-    }
-
-    /// The version of the adapter.
-    /// It should have either 5 or 6 digits separated by periods, where the first digit is Chartboost Mediation SDK's major version, the last digit is the adapter's build version, and intermediate digits are the partner SDK's version.
-    /// Format: `<Chartboost Mediation major version>.<Partner major version>.<Partner minor version>.<Partner patch version>.<Partner build version>.<Adapter build version>` where `.<Partner build version>` is optional.
-    var adapterVersion: String {
-        UnityAdsAdapterConfiguration.adapterVersion
-    }
-
-    /// The partner's unique identifier.
-    var partnerID: String {
-        UnityAdsAdapterConfiguration.partnerID
-    }
-
-    /// The human-friendly partner name.
-    var partnerDisplayName: String {
-        UnityAdsAdapterConfiguration.partnerDisplayName
-    }
+    /// The adapter configuration type that contains adapter and partner info.
+    /// It may also be used to expose custom partner SDK options to the publisher.
+    var configuration: PartnerAdapterConfiguration.Type { UnityAdsAdapterConfiguration.self }
 
     /// Ad storage managed by Chartboost Mediation SDK.
     let storage: PartnerAdapterStorage
@@ -64,7 +45,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         let metaData = UADSMediationMetaData()
         metaData.setName("Chartboost")
         metaData.setVersion(ChartboostMediation.sdkVersion)
-        metaData.set(.adapterVersionKey, value: adapterVersion)
+        metaData.set(.adapterVersionKey, value: self.configuration.adapterVersion)
         metaData.commit()
 
         // Apply initial consents
@@ -89,7 +70,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
     /// - parameter consents: The new consents value, including both modified and unmodified consents.
     /// - parameter modifiedKeys: A set containing all the keys that changed.
     func setConsents(_ consents: [ConsentKey: ConsentValue], modifiedKeys: Set<ConsentKey>) {
-        guard modifiedKeys.contains(partnerID)
+        guard modifiedKeys.contains(configuration.partnerID)
             || modifiedKeys.contains(ConsentKeys.gdprConsentGiven)
             || modifiedKeys.contains(ConsentKeys.ccpaOptIn)
         else {
@@ -99,7 +80,7 @@ final class UnityAdsAdapter: NSObject, PartnerAdapter {
         // Ignore if the consent status has been directly set by publisher via the configuration class.
         let metadata = UADSMetaData()
         if !UnityAdsAdapterConfiguration.isGDPRConsentOverriden {
-            switch consents[partnerID] ?? consents[ConsentKeys.gdprConsentGiven] {
+            switch consents[configuration.partnerID] ?? consents[ConsentKeys.gdprConsentGiven] {
             case ConsentValues.granted:
                 metadata.set(.gdprConsentKey, value: true)
             case ConsentValues.denied:
