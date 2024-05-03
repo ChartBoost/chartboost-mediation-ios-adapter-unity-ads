@@ -3,11 +3,11 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 
+import ChartboostMediationSDK
 import Foundation
-import os.log
 import UnityAds
 
-@objc public class UnityAdsAdapterConfiguration: NSObject {
+@objc public class UnityAdsAdapterConfiguration: NSObject, PartnerAdapterConfiguration {
 
     /// The version of the partner SDK.
     @objc public static var partnerSDKVersion: String {
@@ -33,7 +33,7 @@ import UnityAds
         }
         set {
             UnityAds.setDebugMode(newValue)
-            os_log(.debug, log: log, "Unity Ads SDK test mode set to %{public}s", "\(newValue)")
+            log("Test mode set to \(newValue)")
         }
     }
 
@@ -45,7 +45,7 @@ import UnityAds
         let metadata = UADSMetaData()
         metadata.set("gdpr.consent", value: consent)
         metadata.commit()
-        os_log(.info, log: log, "UnityAds SDK GDPR consent override set to %{public}s", "\(consent)")
+        log("GDPR consent override set to \(consent)")
     }
 
     /// Use to manually set the consent status on the Pangle SDK.
@@ -56,7 +56,7 @@ import UnityAds
         let metadata = UADSMetaData()
         metadata.set("privacy.consent", value: consent)
         metadata.commit()
-        os_log(.info, log: log, "UnityAds SDK privacy consent override set to %{public}s", "\(consent)")
+        log("Privacy consent override set to \(consent)")
     }
 
     /// Internal flag that indicates if the GDPR consent has been overriden by the publisher.
@@ -64,6 +64,4 @@ import UnityAds
 
     /// Internal flag that indicates if the Privacy consent has been overriden by the publisher.
     static private(set) var isPrivacyConsentOverriden = false
-
-    private static let log = OSLog(subsystem: "com.chartboost.mediation.adapter.unityads", category: "Configuration")
 }
