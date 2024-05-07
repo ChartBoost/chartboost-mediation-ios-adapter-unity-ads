@@ -13,5 +13,5 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: chartboost/chartboost-mediation-ios-actions/adapter-smoke-test@v1
-      with:
-            allow-warnings: true
+        with:
+          allow-warnings: true
