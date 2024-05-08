@@ -13,3 +13,5 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: chartboost/chartboost-mediation-ios-actions/release-adapter@v1
+        with:
+          allow-warnings: true
