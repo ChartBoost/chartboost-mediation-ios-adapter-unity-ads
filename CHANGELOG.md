@@ -11,8 +11,8 @@ All official releases can be found on this repository's [releases page](https://
 
 ## Mediation 5
 
-### 5.4.15.0.0
-- This version of the adapter has been certified with UnityAds 4.15.0.
+### 5.4.16.0.0
+- This version of the adapter has been certified with UnityAds 4.16.0.
 
 ### 5.4.12.0.0
 - The minimum deployment target compatible with this adapter is now iOS 13.
